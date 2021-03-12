@@ -1,0 +1,33 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+--use IEEE.STD_LOGIC_ARITH.ALL;
+--use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity adxl345_top_lvl is
+    Port ( 
+				CLK : in  STD_LOGIC;
+				RST_n : in  STD_LOGIC;
+				
+				-- I/O port buses
+				PORT_CYC_I : in 	std_logic;
+				PORT_STB_I : in 	std_logic;
+				PORT_WE_I  : in 	std_logic;
+				PORT_ACK_O : out 	std_logic;
+				PORT_ADR_I : in	std_logic_vector(7 downto 0);
+				PORT_DAT_I : in 	std_logic_vector(7 downto 0);
+				PORT_DAT_O : out 	std_logic_vector(7 downto 0);
+				-- Interrupt ports
+				INT_REQ : out std_logic;
+				INT_ACK : in std_logic;
+				
+				--ADXL345
+				acceleration_x : in     STD_LOGIC_VECTOR(15 DOWNTO 0);  --x-axis acceleration data
+				acceleration_y : in     STD_LOGIC_VECTOR(15 DOWNTO 0);  --y-axis acceleration data
+				acceleration_z : in     STD_LOGIC_VECTOR(15 DOWNTO 0); --z-axis acceleration data
+				flag		   	: in	 STD_LOGIC  --sensor data is avalible and updated
+				
+				);
+end adxl345_top_lvl;
+
+architecture behavioral of adxl345_top_lvl is
