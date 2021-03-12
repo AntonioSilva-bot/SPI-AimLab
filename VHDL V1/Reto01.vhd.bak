@@ -1,0 +1,74 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+--use IEEE.STD_LOGIC_ARITH.ALL;
+--use IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+
+entity Reto01 is
+	Port (
+				CLK : in  STD_LOGIC;
+				RST : in  STD_LOGIC;
+				
+				--SPI PINS
+				GSENSOR_SDI : in STD_LOGIC_VECTOR(7 downto 0); --miso
+				GSENSOR_SCLK: buffer STD_LOGIC; --spi serial clk
+				GSENSOR_CS_n: buffer STD_LOGIC; --chip select
+				GSENSOR_SDO : out STD_LOGIC_VECTOR(7 downto 0); --mosi
+				--Push buttons
+				KEY : in STD_LOGIC_VECTOR(1 downto 0)
+	);
+end Reto01;
+
+
+architecture behavioral of gumnut_leds_switches_02 is
+
+component adxl345_inter is 
+    Port ( 
+				CLK : in  STD_LOGIC;
+				RST : in  STD_LOGIC;
+				
+				-- I/O port buses
+				PORT_CYC_I : in 	std_logic;
+				PORT_STB_I : in 	std_logic;
+				PORT_WE_I  : in 	std_logic;
+				PORT_ACK_O : out 	std_logic;
+				PORT_ADR_I : in	std_logic_vector(7 downto 0);
+				PORT_DAT_I : in 	std_logic_vector(7 downto 0);
+				PORT_DAT_O : out 	std_logic_vector(7 downto 0);
+				-- Interrupt ports
+				INT_REQ : out std_logic;
+				INT_ACK : in std_logic;
+				
+				--ADXL345
+				acceleration_x : in     STD_LOGIC_VECTOR(15 DOWNTO 0);  --x-axis acceleration data
+				acceleration_y : in     STD_LOGIC_VECTOR(15 DOWNTO 0);  --y-axis acceleration data
+				acceleration_z : in     STD_LOGIC_VECTOR(15 DOWNTO 0); --z-axis acceleration data
+				flag		   	: in	 STD_LOGIC;  --sensor data is avalible and updated
+				
+				--Game keys
+				fire_key			: in STD_LOGIC;
+				start_key		: in STD_LOGIC --start and pause key
+			);
+end component adxl345_inter;
+
+component pmod_accelerometer_adxl345
+	GENERIC(
+		 clk_freq   : INTEGER := 50;              --system clock frequency in MHz
+		 data_rate  : STD_LOGIC_VECTOR := "0100"; --data rate code to configure the accelerometer
+		 data_range : STD_LOGIC_VECTOR := "00");  --data range code to configure the accelerometer
+	  PORT(
+		 clk            : IN      STD_LOGIC;                      --system clock
+		 reset_n        : IN      STD_LOGIC;                      --active low asynchronous reset
+		 miso           : IN      STD_LOGIC;                      --SPI bus: master in, slave out
+		 sclk           : BUFFER  STD_LOGIC;                      --SPI bus: serial clock
+		 ss_n           : BUFFER  STD_LOGIC_VECTOR(0 DOWNTO 0);   --SPI bus: slave select
+		 mosi           : OUT     STD_LOGIC;                      --SPI bus: master out, slave in
+		 acceleration_x : OUT     STD_LOGIC_VECTOR(15 DOWNTO 0);  --x-axis acceleration data
+		 acceleration_y : OUT     STD_LOGIC_VECTOR(15 DOWNTO 0);  --y-axis acceleration data
+		 acceleration_z : OUT     STD_LOGIC_VECTOR(15 DOWNTO 0)   --z-axis acceleration data
+		 
+		 );
+end component pmod_accelerometer_adxl345;
+
+end behavioral;
