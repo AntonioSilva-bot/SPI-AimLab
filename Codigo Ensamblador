@@ -1,0 +1,121 @@
+            data
+            org 0x000
+; variables acelerometro            
+datox:        bss 2
+datoy:        bss 2
+
+;Declaration of ports for uart
+data_transmited: equ 0x10
+tx_busy: equ 0x11
+tx_habilitated: equ 0x12
+
+;Ports for push buttons
+keys: equ 0x14
+out_key: equ 0x15
+
+;Ports for ADXL345
+flag: equ 0x13
+x_1: equ 0xD1
+x_2: equ 0xD2
+y_1: equ 0xD3
+y_2: equ 0xD4
+
+            text
+            org 0x000
+            jmp main
+
+; Declaration of ISR
+            text
+            org 0x001
+            
+            inp    r1, x_1
+            stm r1, datox
+            inp r2, x_2
+            stm r2, datox+1
+            ldm r3, (r1)
+            jsb wait_4_tx_acc
+            ldm r3, (r2)
+            jsb wait_4_tx_acc
+            
+            ;data for y-axis
+            inp    r1, y_1
+            stm r1, datoy
+            inp r2, y_2
+            stm r2, datoy+1
+            ldm r3, (r1)
+            jsb wait_4_tx_acc
+            ldm r3, (r2)
+            jsb wait_4_tx_acc
+            
+wait_4_tx_acc:    inp r5, tx_busy
+                sub r0, r5, 0x01
+                bz  wait_4_tx_acc
+                out r3, data_transmited 
+            
+                add r6, r7, 0x01
+                out r6, tx_habilitated
+                ret
+            
+            reti                 ; return from ISR
+            
+                        
+            
+; Main program            
+            text
+            org 0x020
+main:        enai   ;enable interrupts
+loop:        jsb key_cases                 
+            jmp loop
+        
+;How values of the push buttons are going to be send in binary by gumnut processor        
+key_cases:     inp r4,keys
+            mask r5,r4,0xFC ;to only have the two least significant bits
+            sub r0, r5,0x01 ; if fire key is pressed 
+            bz key_case0
+            sub r0, r5, 0x02 ; if start is pressed
+            bz key_case1
+            sub r0, r5, 0x03 ; if both keys pressed
+            bz key_case2
+            jmp key_case3 ; if  none key are pressed
+            
+            
+            
+key_case0: add r5,r0, 0x45
+wait_4_tx0:    inp r6, tx_busy
+            sub r0, r3, 0x01
+            bz  wait_4_tx0
+            out r5, data_transmited 
+            
+            add r6, r7, 0x01
+            out r6, tx_habilitated
+           ret
+           
+key_case1: add r5,r0, 0x46
+wait_4_tx1:    inp r6, tx_busy
+            sub r0, r3, 0x01
+            bz  wait_4_tx1
+            out r5, data_transmited 
+            
+            add r6, r7, 0x01
+            out r6, tx_habilitated
+           ret
+
+key_case2: add r5,r0, 0x45
+wait_4_tx2:    inp r6, tx_busy
+            sub r0, r3, 0x01
+            bz  wait_4_tx2
+            out r5, data_transmited 
+            
+            add r6, r7, 0x01
+            out r6, tx_habilitated
+           ret
+
+key_case3: add r5,r0, 0x00
+wait_4_tx3:    inp r6, tx_busy
+            sub r0, r6, 0x01
+            bz  wait_4_tx3
+            out r5, data_transmited 
+            
+            add r5, r7, 0x01
+            out r5, tx_habilitated
+           ret
